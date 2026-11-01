@@ -78,7 +78,7 @@
                     </button>
                 </div>
 
-                <button id="headerGithubBtn" onclick="toggleModal('githubModal')" class="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-3.5 py-2 rounded-xl transition-colors shadow-xs">
+                <button id="headerGithubBtn" onclick="toggleModal('githubModal')" class="hidden inline-flex items-center space-x-1.5 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-3.5 py-2 rounded-xl transition-colors shadow-xs">
                     <i data-lucide="rocket" class="w-4 h-4 text-indigo-400"></i>
                     <span class="hidden sm:inline">Publish to GitHub</span>
                 </button>
@@ -766,15 +766,18 @@
             const adminView = document.getElementById('adminView');
             const tabPartBtn = document.getElementById('tabParticipantBtn');
             const tabAdminBtn = document.getElementById('tabAdminBtn');
+            const headerGithubBtn = document.getElementById('headerGithubBtn');
 
             if (mode === 'participant') {
                 participantView.classList.remove('hidden');
                 adminView.classList.add('hidden');
+                if (headerGithubBtn) headerGithubBtn.classList.add('hidden');
                 tabPartBtn.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-indigo-600 shadow-xs flex items-center gap-1.5";
                 tabAdminBtn.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
             } else {
                 participantView.classList.add('hidden');
                 adminView.classList.remove('hidden');
+                if (headerGithubBtn) headerGithubBtn.classList.remove('hidden');
                 tabAdminBtn.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-indigo-600 shadow-xs flex items-center gap-1.5";
                 tabPartBtn.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
                 updatePreview();
@@ -1833,8 +1836,8 @@
                     });
                 }
 
-                const exportConfig = {
-                    conferenceTitle: document.getElementById('confTitleInput').value || 'Preuzmite svoj certifikat',
+                exportConfig = {
+                    conferenceTitle: document.getElementById('confTitleInput').value || 'Download Your Certificate',
                     pdfBase64: arrayBufferToBase64(currentPdfBytes),
                     settings: {
                         nameCenter: document.getElementById('nameCenter').checked,
@@ -1853,7 +1856,11 @@
                 };
 
                 // Dohvati izvorni HTML dokument i ugradi konfiguraciju
+                document.getElementById('headerGithubBtn').classList.add('hidden');
                 let fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+                if (isAdminAuthenticated && !document.getElementById('adminView').classList.contains('hidden')) {
+                    document.getElementById('headerGithubBtn').classList.remove('hidden');
+                }
                 fullHtml = fullHtml.replace(
                     "const PUBLIC_PORTAL_LOCKED_CONFIG = null; // __PUBLIC_CONFIG_PLACEHOLDER__",
                     `const PUBLIC_PORTAL_LOCKED_CONFIG = ${JSON.stringify(exportConfig)};`
