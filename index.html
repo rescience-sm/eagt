@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAGT Conference 2026 - Certificate of Attendance Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Ikone -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Biblioteke za PDF, Fontove, CSV i ZIP -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- PDF.js za izravno iscrtavanje PDF pregleda na mobitelima i računalima -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Prilagođeni scrollbar za tablicu */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigacija / Zaglavlje -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5 min-w-0">
+                <!-- EAGT prepoznatljivi tamnoplavi logotip (8 elemenata u krugu) -->
+                <div class="bg-[#1b3664] text-white p-2 rounded-xl shadow-md shadow-blue-900/15 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="41" y="6" width="18" height="16" rx="2" fill="white"/>
+                        <rect x="41" y="78" width="18" height="16" rx="2" fill="white"/>
+                        <rect x="6" y="41" width="16" height="18" rx="2" fill="white"/>
+                        <rect x="78" y="41" width="16" height="18" rx="2" fill="white"/>
+                        <rect x="18" y="18" width="16" height="16" rx="2" fill="white" opacity="0.85"/>
+                        <rect x="66" y="18" width="16" height="16" rx="2" fill="white" opacity="0.85"/>
+                        <rect x="18" y="66" width="16" height="16" rx="2" fill="white" opacity="0.85"/>
+                        <rect x="66" y="66" width="16" height="16" rx="2" fill="white" opacity="0.85"/>
+                    </svg>
+                </div>
+                <div class="truncate">
+                    <h1 id="headerTitle" class="font-bold text-sm sm:text-lg text-[#1b3664] leading-tight truncate">EAGT Conference 2026 <span class="hidden sm:inline-block text-[11px] font-semibold bg-blue-50 text-[#1b3664] border border-blue-200 px-2 py-0.5 rounded-full ml-1">DUBROVNIK</span></h1>
+                    <p id="headerSubtitle" class="text-[11px] sm:text-xs text-slate-500 truncate">Bridges of Difference • 22nd–25th Oct 2026</p>
+                </div>
+            </div>
+
+            <!-- Prekidač načina rada (Sudionik vs Organizator) -->
+            <div id="adminControlsBar" class="flex items-center space-x-2 sm:space-x-3">
+                <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-semibold">
+                    <button id="tabParticipantBtn" onclick="switchMode('participant')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-indigo-600 shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        <span>Participant Portal</span>
+                    </button>
+                    <button id="tabAdminBtn" onclick="switchMode('admin')" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+                        <i id="adminLockIcon" data-lucide="lock" class="w-3.5 h-3.5"></i>
+                        <span>Admin Settings</span>
+                    </button>
+                </div>
+
+                <button id="headerGithubBtn" onclick="toggleModal('githubModal')" class="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-3.5 py-2 rounded-xl transition-colors shadow-xs">
+                    <i data-lucide="rocket" class="w-4 h-4 text-indigo-400"></i>
+                    <span class="hidden sm:inline">Publish to GitHub</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Glavni sadržaj -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Obavijest / Status traka -->
+        <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border flex items-center justify-between transition-all">
+            <div class="flex items-center space-x-3">
+                <i id="statusIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <span id="statusText" class="text-sm font-medium"></span>
+            </div>
+            <button onclick="hideStatus()" class="text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- POGLED 1: JAVNI PORTAL ZA SUDIONIKE        -->
+        <!-- ========================================== -->
+        <div id="participantView" class="max-w-2xl mx-auto py-4 sm:py-10">
+            <div class="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 overflow-hidden">
+                
+                <!-- Gornji dekorativni dio prilagođen EAGT Conference 2026 Dubrovnik -->
+                <div class="bg-gradient-to-br from-[#162d54] via-[#1b3664] to-[#0f1f3a] p-7 sm:p-9 text-center text-white relative overflow-hidden">
+                    
+                    <!-- Gornji red logotipova organizatora (EAGT & DGIPH) -->
+                    <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mb-6 pb-5 border-b border-white/15">
+                        <!-- EAGT Logo (Vektorski prikaz iz dokumenta) -->
+                        <div class="flex items-center space-x-2.5 text-left">
+                            <div class="w-11 h-11 rounded-xl bg-white p-1.5 shadow-md flex items-center justify-center flex-shrink-0">
+                                <svg viewBox="0 0 100 100" class="w-full h-full" fill="#1b3664">
+                                    <path d="M40,5 H60 V23 C53,19 47,19 40,23 Z" />
+                                    <path d="M40,95 H60 V77 C53,81 47,81 40,77 Z" />
+                                    <path d="M5,40 V60 H23 C19,53 19,47 23,40 Z" />
+                                    <path d="M95,40 V60 H77 C81,53 81,47 77,40 Z" />
+                                    <path d="M16,16 H34 V32 C27,29 22,31 16,34 Z" />
+                                    <path d="M84,16 H66 V32 C73,29 78,31 84,34 Z" />
+                                    <path d="M16,84 H34 V68 C27,71 22,69 16,66 Z" />
+                                    <path d="M84,84 H66 V68 C73,71 78,69 84,66 Z" />
+                                </svg>
+                            </div>
+                            <div class="leading-tight">
+                                <div class="text-[11px] font-extrabold tracking-wider uppercase text-white">European Association</div>
+                                <div class="text-[10px] font-medium tracking-wide text-blue-200 uppercase">for Gestalt Therapy</div>
+                            </div>
+                        </div>
+
+                        <div class="hidden sm:block h-7 w-px bg-white/20"></div>
+
+                        <!-- DGIPH Logo oznaka (Vektorski simbol + puni naziv) -->
+                        <div class="flex items-center space-x-2.5 text-left">
+                            <div class="w-11 h-11 rounded-xl bg-white p-1.5 shadow-md flex items-center justify-center flex-shrink-0">
+                                <svg viewBox="0 0 120 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Stilski lukovi/most i siluete (DGIPH / Gestalt figura-pozadina) -->
+                                    <path d="M15 32 C42 12, 78 12, 105 32" stroke="#1b3664" stroke-width="8" stroke-linecap="round"/>
+                                    <path d="M26 46 C48 30, 72 30, 94 46" stroke="#2b549a" stroke-width="6.5" stroke-linecap="round"/>
+                                    <circle cx="42" cy="62" r="9" fill="#1b3664"/>
+                                    <path d="M26 88 C26 73, 58 73, 58 88" stroke="#1b3664" stroke-width="7" stroke-linecap="round"/>
+                                    <circle cx="78" cy="62" r="9" fill="#2b549a"/>
+                                    <path d="M62 88 C62 73, 94 73, 94 88" stroke="#2b549a" stroke-width="7" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="leading-tight">
+                                <div class="text-sm font-black tracking-widest text-white">DGIPH</div>
+                                <div class="text-[9px] font-medium text-blue-200 max-w-[150px] leading-tight">Društvo geštalt i integrativnih psihoterapeuta Hrvatske</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Središnji naslov konferencije -->
+                    <div class="space-y-1.5">
+                        <span class="inline-block text-[11px] font-bold tracking-[0.2em] uppercase text-amber-300/95 bg-white/10 px-3 py-1 rounded-full border border-white/15">
+                            22nd–25th October 2026 • Dubrovnik, Croatia
+                        </span>
+                        <h2 id="portalConfTitle" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white pt-1">
+                            EAGT CONFERENCE 2026
+                        </h2>
+                        <p class="text-lg sm:text-xl font-serif italic text-blue-100">
+                            "Bridges of Difference"
+                        </p>
+                    </div>
+
+                    <p class="text-blue-100/90 text-xs sm:text-sm mt-4 max-w-md mx-auto leading-relaxed">
+                        Download your official <strong>Certificate of Attendance</strong>. Enter your <strong>email address</strong> or <strong>full name</strong> in the field below.
+                    </p>
+                </div>
+
+                <!-- Forma za pretragu -->
+                <div class="p-6 sm:p-8 space-y-6">
+                    <div>
+                        <label for="lookupQuery" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                            Your Email Address or Full Name
+                        </label>
+                        <div class="relative flex items-center">
+                            <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none"></i>
+                            <input 
+                                type="text" 
+                                id="lookupQuery" 
+                                onkeydown="if(event.key === 'Enter') verifyAndFindParticipant()"
+                                placeholder="e.g. example@mail.com or Christopher Green-Wilson" 
+                                class="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 outline-none text-slate-800 font-medium transition-all"
+                            />
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                            Case-insensitive search with automatic special character recognition (č, ć, ž, š, đ).
+                        </p>
+                    </div>
+
+                    <button 
+                        onclick="verifyAndFindParticipant()" 
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                    >
+                        <span>Find My Certificate</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Poruka ako korisnik nije pronađen -->
+                    <div id="lookupErrorBox" class="hidden p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start space-x-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <h4 class="font-semibold">Participant not found on the list</h4>
+                            <p class="text-xs text-red-700 mt-0.5">Please check that you have entered your full name or the email address used during registration.</p>
+                        </div>
+                    </div>
+
+                    <!-- Rezultat ako je korisnik PRONAĐEN -->
+                    <div id="lookupResultCard" class="hidden rounded-2xl bg-emerald-50/70 border-2 border-emerald-500/30 p-5 sm:p-6 space-y-5 transition-all">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-200/70 pb-4">
+                            <div class="flex items-start space-x-3.5">
+                                <div class="bg-emerald-600 text-white p-2.5 rounded-xl shadow-sm mt-0.5">
+                                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">Verified Participant</span>
+                                    <h3 id="foundParticipantName" class="text-xl font-bold text-slate-900 mt-1">Christopher Green-Wilson</h3>
+                                    <p class="text-xs text-slate-600 font-mono mt-0.5">Certificate ID: <strong id="foundParticipantId" class="text-slate-900">26-001</strong></p>
+                                </div>
+                            </div>
+
+                            <button 
+                                onclick="downloadFoundParticipantPdf()" 
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-3 rounded-xl shadow-md shadow-emerald-600/15 transition-all flex items-center justify-center gap-2 text-sm flex-shrink-0"
+                            >
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>Download PDF</span>
+                            </button>
+                        </div>
+
+                        <!-- Pregled certifikata za pronađenog korisnika -->
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 mb-2">Certificate preview:</p>
+                            <div class="w-full bg-slate-800 rounded-xl overflow-hidden border border-slate-300 p-2 sm:p-4 flex items-center justify-center">
+                                <canvas id="participantPdfCanvas" class="max-w-full h-auto rounded shadow-lg bg-white"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Brzi testni primjeri (vidljivo samo dok je u načinu rada za testiranje) -->
+                    <div id="demoHintsBox" class="pt-4 border-t border-slate-100">
+                        <p class="text-xs text-slate-400 mb-2">Try searching with sample entries from the database (click to autofill):</p>
+                        <div id="demoPillsContainer" class="flex flex-wrap gap-1.5">
+                            <!-- Puni se iz JS-a -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- POGLED 2: ADMIN KONFIGURATOR               -->
+        <!-- ========================================== -->
+        <div id="adminView" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- LIJEVA KOLONA: Postavke i Ulazni podaci (5 kolona na velikom ekranu) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- KORAK 1: PDF Špranca -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                            <h2 class="font-semibold text-slate-800">PDF Certificate Template</h2>
+                        </div>
+                        <button onclick="useSamplePdf()" class="text-xs font-medium text-indigo-600 hover:text-indigo-700 underline">
+                            certificate.pdf
+                        </button>
+                    </div>
+                    
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100/80 transition-colors relative">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+                            <i data-lucide="file-up" class="w-8 h-8 text-slate-400 mb-2"></i>
+                            <p id="pdfFileName" class="text-sm font-medium text-slate-700">Click to select a PDF template</p>
+                            <p id="pdfDimensions" class="text-xs text-slate-400 mt-1">Supports all A4 / Landscape .pdf documents</p>
+                        </div>
+                        <input id="pdfUpload" type="file" accept="application/pdf" class="hidden" onchange="handlePdfUpload(event)" />
+                    </label>
+
+                    <!-- Opcija za vlastiti font -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="type" class="w-3.5 h-3.5 text-emerald-600"></i>
+                            Font: <strong id="fontStatusName" class="text-slate-700">Roboto (Supports UTF-8 / Diacritics)</strong>
+                        </span>
+                        <label class="text-indigo-600 hover:underline cursor-pointer font-medium">
+                            Upload Custom .TTF
+                            <input type="file" accept=".ttf,.otf" class="hidden" onchange="handleCustomFont(event)" />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- KORAK 2: Baza korisnika -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">2</span>
+                            <h2 class="font-semibold text-slate-800">Participant List (Name & Email)</h2>
+                        </div>
+                        <div class="space-x-2">
+                            <label class="text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors inline-flex items-center gap-1">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Upload CSV
+                                <input type="file" accept=".csv,.txt" class="hidden" onchange="handleCsvUpload(event)" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-xs text-slate-500 mb-1">Conference Title (displayed to participants on the portal):</label>
+                        <input type="text" id="confTitleInput" value="EAGT CONFERENCE 2026 • DUBROVNIK CROATIA" oninput="updatePortalTitle()" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <p class="text-xs text-slate-500 mb-2">Enter participants (format: <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">Full Name, email@domain.com</code> or include custom ID <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">Full Name, email, xx-xxx</code>):</p>
+                    <textarea id="participantsInput" rows="5" oninput="parseParticipants()" class="w-full rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-slate-700" placeholder="Christopher Green-Wilson, christopher.gw@email.com&#10;Ana Anić, ana.anic@email.hr, 26-055&#10;Ivana Horvat, ivana.horvat@domain.com"></textarea>
+
+                    <!-- Postavke za generiranje ID-a xx-xxx -->
+                    <div class="mt-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">ID Number Format (xx-xxx)</span>
+                            <span class="text-xs font-mono bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200" id="idExamplePreview">Example: 26-001</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mt-2">
+                            <div>
+                                <label class="block text-[11px] text-slate-500 mb-1">Prefix (xx)</label>
+                                <input type="text" id="idPrefix" value="26" maxlength="4" oninput="parseParticipants()" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-500 mb-1">Start Number (xxx)</label>
+                                <input type="number" id="idStartNum" value="1" min="1" oninput="parseParticipants()" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-500 mb-1">Assignment Mode</label>
+                                <select id="idGenerationMode" onchange="parseParticipants()" class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <option value="seq">Sequential (001, 002)</option>
+                                    <option value="rand">Random (x-xxx)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KORAK 3: Pozicioniranje i izgled teksta -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">3</span>
+                            <h2 class="font-semibold text-slate-800">Text Position & Appearance</h2>
+                        </div>
+                        <button onclick="updatePreview()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh Preview
+                        </button>
+                    </div>
+
+                    <!-- Postavke za Ime i Prezime -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-600"></i> Full Name
+                            </h3>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-600 cursor-pointer">
+                                <input type="checkbox" id="nameCenter" checked onchange="toggleNameCenter()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span>Center Horizontally</span>
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="nameXContainer" class="opacity-40 pointer-events-none">
+                                <label class="flex justify-between text-xs text-slate-500 mb-1">
+                                    <span>X Position (Left–Right)</span>
+                                    <span id="nameXVal" class="font-mono text-slate-700">420</span>
+                                </label>
+                                <input type="range" id="nameX" min="0" max="1000" value="420" oninput="syncSlider('nameX')" onchange="updatePreview()" class="w-full accent-indigo-600">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-xs text-slate-500 mb-1">
+                                    <span>Y Position (Bottom–Top)</span>
+                                    <span id="nameYVal" class="font-mono text-slate-700">280</span>
+                                </label>
+                                <input type="range" id="nameY" min="0" max="1000" value="280" oninput="syncSlider('nameY')" onchange="updatePreview()" class="w-full accent-indigo-600">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Font Size (pt)</label>
+                                <input type="number" id="nameSize" value="32" min="8" max="120" onchange="updatePreview()" class="w-full rounded-lg border border-slate-300 px-2.5 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Text Color</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="nameColor" value="#1e293b" onchange="updatePreview()" class="h-8 w-12 rounded cursor-pointer border border-slate-300">
+                                    <span class="text-xs font-mono text-slate-500" id="nameColorHex">#1e293b</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Postavke za ID Certifikata -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                <i data-lucide="hash" class="w-3.5 h-3.5 text-indigo-600"></i> Certificate ID (xx-xxx)
+                            </h3>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-600 cursor-pointer">
+                                <input type="checkbox" id="idCenter" checked onchange="toggleIdCenter()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span>Center Horizontally</span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-0.5">
+                            <label class="text-xs text-slate-500">Label prefix:</label>
+                            <input type="text" id="idLabelText" value="Certificate ID: " onchange="updatePreview()" class="w-36 rounded border border-slate-300 px-2 py-0.5 text-xs font-mono" placeholder="Certificate ID: ">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="idXContainer" class="opacity-40 pointer-events-none">
+                                <label class="flex justify-between text-xs text-slate-500 mb-1">
+                                    <span>X Position (Left–Right)</span>
+                                    <span id="idXVal" class="font-mono text-slate-700">421</span>
+                                </label>
+                                <input type="range" id="idX" min="0" max="1000" value="421" oninput="syncSlider('idX')" onchange="updatePreview()" class="w-full accent-indigo-600">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-xs text-slate-500 mb-1">
+                                    <span>Y Position (Bottom–Top)</span>
+                                    <span id="idYVal" class="font-mono text-slate-700">48</span>
+                                </label>
+                                <input type="range" id="idY" min="0" max="1000" value="48" oninput="syncSlider('idY')" onchange="updatePreview()" class="w-full accent-indigo-600">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Font Size (pt)</label>
+                                <input type="number" id="idSize" value="9.5" min="6" max="72" step="0.5" onchange="updatePreview()" class="w-full rounded-lg border border-slate-300 px-2.5 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">ID Color</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="idColor" value="#64748b" onchange="updatePreview()" class="h-8 w-12 rounded cursor-pointer border border-slate-300">
+                                    <span class="text-xs font-mono text-slate-500" id="idColorHex">#64748b</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- DESNA KOLONA: Pregled uživo, Tablica i Akcije (7 kolona na velikom ekranu) -->
+            <div class="lg:col-span-7 space-y-6 flex flex-col">
+                
+                <!-- Pregled Certifikata -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex-grow flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="eye" class="w-4 h-4 text-indigo-600"></i>
+                            <h2 class="font-semibold text-slate-800">Live Certificate Preview</h2>
+                        </div>
+                        <span id="previewParticipantName" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">
+                            Preview: 1st participant
+                        </span>
+                    </div>
+
+                    <div class="relative w-full bg-slate-800 rounded-xl overflow-hidden flex-grow min-h-[260px] sm:min-h-[440px] border border-slate-200 p-3 sm:p-5 flex items-center justify-center">
+                        <canvas id="pdfPreviewCanvas" class="max-w-full max-h-[420px] w-auto h-auto rounded shadow-xl bg-white"></canvas>
+                        
+                        <!-- Overlay za učitavanje -->
+                        <div id="previewLoader" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center text-white">
+                            <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-2 text-indigo-400"></i>
+                            <span class="text-sm font-medium">Generating preview...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tablica Sudionika & Glavni Gumbi za Generiranje -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h2 class="font-semibold text-slate-800 flex items-center gap-2">
+                                <span>Generated List & Certificate IDs</span>
+                                <span id="participantCountBadge" class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </h2>
+                            <p class="text-xs text-slate-500">Click any row in the table to preview that participant's certificate above</p>
+                        </div>
+
+                        <!-- Gumbi za masovni izvoz -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="exportPublicPortalHtml()" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl shadow-sm transition-colors flex items-center gap-1.5" title="Download ready-to-publish webpage for GitHub with encrypted participant records">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                <span>Export Portal for GitHub (.html)</span>
+                            </button>
+                            <button id="btnMergedPdf" onclick="generateAllMergedPdf()" class="text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5">
+                                <i data-lucide="files" class="w-4 h-4"></i>
+                                <span>Merged PDF</span>
+                            </button>
+                            <button id="btnZipAll" onclick="generateAllZip()" class="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-md shadow-indigo-100 transition-all flex items-center gap-2">
+                                <i data-lucide="folder-archive" class="w-4 h-4"></i>
+                                <span>Download ALL (.ZIP)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar kod masovnog generiranja -->
+                    <div id="batchProgressContainer" class="hidden mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex justify-between text-xs font-medium text-slate-700 mb-1.5">
+                            <span id="batchProgressText">Generating certificates...</span>
+                            <span id="batchProgressPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div id="batchProgressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tablica -->
+                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 text-xs font-semibold text-slate-600 uppercase">
+                                <tr>
+                                    <th class="py-2.5 px-4 w-10">#</th>
+                                    <th class="py-2.5 px-4">Full Name</th>
+                                    <th class="py-2.5 px-4">Email (for lookup)</th>
+                                    <th class="py-2.5 px-4">ID (xx-xxx)</th>
+                                    <th class="py-2.5 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Redovi se pune putem JS-a -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: Prijava u Admin sučelje (Šifra: trenutni datum MMDD / DDMM) -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Protected Admin Access</h3>
+                        <p class="text-[11px] text-slate-500">Enter the 4-digit security PIN</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminLoginModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="py-5 space-y-4">
+                <div>
+                    <label for="adminPasswordInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+                        Security Passcode (PIN)
+                    </label>
+                    <input 
+                        type="password" 
+                        id="adminPasswordInput" 
+                        maxlength="4"
+                        inputmode="numeric"
+                        oninput="checkAdminPasswordAuto()"
+                        onkeydown="if(event.key === 'Enter') verifyAdminPassword()"
+                        placeholder="••••" 
+                        class="w-full text-center tracking-[0.5em] text-2xl font-mono font-bold py-3 px-4 rounded-xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 outline-none text-slate-800"
+                    />
+                    <p id="adminPasswordError" class="hidden text-xs text-red-600 font-medium mt-2 text-center">
+                        Invalid passcode! Please try again.
+                    </p>
+                </div>
+
+                <button 
+                    onclick="verifyAdminPassword()" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                    <span>Unlock Admin Settings</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Objava Portala na GitHub Pages -->
+    <div id="githubModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                    <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                        <i data-lucide="globe" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900">How to Publish the Participant Portal on GitHub?</h3>
+                </div>
+                <button onclick="toggleModal('githubModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="py-4 space-y-4 text-sm text-slate-600 leading-relaxed">
+                <p>To allow participants to enter their <strong>email</strong> or <strong>full name</strong> and download their certificate directly, click the button below to generate a <strong>locked public version</strong> of this page (with Admin settings protected by PIN and email addresses encrypted).</p>
+                
+                <div class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-3">
+                    <h4 class="font-semibold text-indigo-950">3-Step Deployment:</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                        <li>In <strong>Admin Settings</strong>, upload your PDF template, adjust the text coordinates, and enter all participants (Full Name, Email).</li>
+                        <li>Click the green button below to download the ready-made <code class="bg-white px-1.5 py-0.5 rounded border text-xs">index.html</code> file containing your embedded PDF template and encrypted participant list.</li>
+                        <li>Upload that <code class="bg-white px-1.5 py-0.5 rounded border text-xs">index.html</code> file to your GitHub repository and enable <strong>GitHub Pages</strong>.</li>
+                    </ol>
+                    <div class="pt-2">
+                        <button onclick="exportPublicPortalHtml()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                            <span>Download Ready index.html for GitHub (Public Portal)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-900 text-xs space-y-1.5">
+                    <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+                        <i data-lucide="lock" class="w-4 h-4"></i>
+                        How does privacy protection (GDPR) work?
+                    </div>
+                    <p>When exporting the public portal, email addresses and names are <strong>not stored</strong> in plain text in the source code. Instead, they are converted into a one-way cryptographic hash (SHA-256), and the participant's name and certificate ID are masked with a cipher key derived from the user's input. Nobody can extract the list of participants, and each attendee can unlock only their own certificate!</p>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+                <button onclick="toggleModal('githubModal')" class="bg-slate-900 hover:bg-slate-800 text-white font-medium px-5 py-2 rounded-xl text-sm transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glavna Skripta Aplikacije -->
+    <script>
+        // ============================================================================
+        // KONFIGURACIJA ZA JAVNI PORTAL (Automatski se popunjava kod izvoza za GitHub)
+        // ============================================================================
+        const PUBLIC_PORTAL_LOCKED_CONFIG = null; // __PUBLIC_CONFIG_PLACEHOLDER__
+
+        // Inicijalizacija ikona
+        lucide.createIcons();
+
+        // Konfiguracija PDF.js workera za prikaz na svim uređajima
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // Praćenje aktivnih zadataka iscrtavanja po canvasu kako bi se spriječilo preklapanje
+        const activeCanvasRenderTasks = {};
+        const canvasRenderSequence = {};
+
+        // Funkcija za iscrtavanje PDF dokumenta izravno na HTML5 Canvas (radi na mobitelima i desktopu)
+        async function renderPdfBytesToCanvas(pdfBytes, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !window.pdfjsLib) return;
+
+            // Povećaj redni broj iscrtavanja za ovaj canvas
+            const currentSeq = (canvasRenderSequence[canvasId] || 0) + 1;
+            canvasRenderSequence[canvasId] = currentSeq;
+
+            // Ako već postoji aktivno iscrtavanje na ovom canvasu, otkaži ga
+            if (activeCanvasRenderTasks[canvasId]) {
+                try {
+                    activeCanvasRenderTasks[canvasId].cancel();
+                } catch (_) {}
+                activeCanvasRenderTasks[canvasId] = null;
+            }
+
+            const dataCopy = new Uint8Array(pdfBytes);
+            const loadingTask = pdfjsLib.getDocument({ data: dataCopy });
+            const pdf = await loadingTask.promise;
+
+            // Ako je u međuvremenu pokrenuto novije iscrtavanje, prekini
+            if (canvasRenderSequence[canvasId] !== currentSeq) return;
+
+            const page = await pdf.getPage(1);
+            if (canvasRenderSequence[canvasId] !== currentSeq) return;
+
+            // Visoka rezolucija za oštar prikaz na mobilnim zaslonima
+            const viewport = page.getViewport({ scale: 1.8 });
+
+            // Iscrtaj prvo na privremeni (offscreen) canvas kako PDF.js nikada ne bi dijelio isti canvas
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = viewport.width;
+            offscreenCanvas.height = viewport.height;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
+            const renderTask = page.render({
+                canvasContext: offscreenCtx,
+                viewport: viewport
+            });
+            activeCanvasRenderTasks[canvasId] = renderTask;
+
+            try {
+                await renderTask.promise;
+            } catch (err) {
+                if (err && err.name === 'RenderingCancelledException') {
+                    return;
+                }
+                throw err;
+            } finally {
+                if (activeCanvasRenderTasks[canvasId] === renderTask) {
+                    activeCanvasRenderTasks[canvasId] = null;
+                }
+            }
+
+            // Kopiraj gotovu sliku na vidljivi canvas samo ako je ovo zadnji zahtjev
+            if (canvasRenderSequence[canvasId] === currentSeq) {
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const context = canvas.getContext('2d');
+                context.drawImage(offscreenCanvas, 0, 0);
+            }
+        }
+
+        // Globalno stanje aplikacije
+        let currentPdfBytes = null;
+        let customFontBytes = null;
+        let participantsList = [];
+        let selectedParticipantIndex = 0;
+        let foundParticipantForPortal = null;
+        let pdfPageWidth = 841.89; // Zadani A4 Landscape
+        let pdfPageHeight = 595.28;
+        let previewDebounceTimer = null;
+        let isAdminAuthenticated = false;
+
+        // URL pouzdanog TTF fonta s podrškom za hrvatske dijakritičke znakove (Roboto Regular)
+        const ROBOTO_TTF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
+
+        // Pokretanje pri učitavanju stranice
+        window.onload = async function() {
+            await loadDefaultFont();
+
+            // Provjeri je li ovo izvezena javna verzija za GitHub (samo za sudionike)
+            if (PUBLIC_PORTAL_LOCKED_CONFIG) {
+                initLockedPublicPortal(PUBLIC_PORTAL_LOCKED_CONFIG);
+                return;
+            }
+
+            // Inače učitaj početne testne sudionike s e-mail adresama i hrvatskim znakovima
+            document.getElementById('participantsInput').value = 
+                "Test Participant, example@mail.com\nMarija Roth Jelisavčić, mareroth@yahoo.com\nChristopher Green-Wilson, christopher.gw@email.com\nAna Anić, ana.anic@email.hr\nMarko Marković, marko.markovic@tvrtka.hr\nIvana Horvat-Čolak, ivana.horvat@domena.hr\nStjepan Đurić, stjepan.duric@primjer.hr\nŽeljka Šimić, zeljka.simic@konferencija.hr, 26-999";
+            
+            parseParticipants();
+            await useSamplePdf();
+            updatePortalTitle();
+        };
+
+        // Prebacivanje između Portala za sudionike i Admin postavki
+        function switchMode(mode) {
+            if (mode === 'admin' && !isAdminAuthenticated) {
+                openAdminLoginModal();
+                return;
+            }
+
+            const participantView = document.getElementById('participantView');
+            const adminView = document.getElementById('adminView');
+            const tabPartBtn = document.getElementById('tabParticipantBtn');
+            const tabAdminBtn = document.getElementById('tabAdminBtn');
+
+            if (mode === 'participant') {
+                participantView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                tabPartBtn.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-indigo-600 shadow-xs flex items-center gap-1.5";
+                tabAdminBtn.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
+            } else {
+                participantView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                tabAdminBtn.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-indigo-600 shadow-xs flex items-center gap-1.5";
+                tabPartBtn.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
+                updatePreview();
+            }
+            lucide.createIcons();
+        }
+
+        // Otvaranje i provjera šifre (trenutni datum u formatu MMDD ili DDMM bez godine, npr. 1101)
+        function openAdminLoginModal() {
+            const modal = document.getElementById('adminLoginModal');
+            const input = document.getElementById('adminPasswordInput');
+            const err = document.getElementById('adminPasswordError');
+            err.classList.add('hidden');
+            input.value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        }
+
+        function getValidDatePasswords() {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            // Podržava npr. "1101" (MMDD) i "0111" (DDMM)
+            return [mm + dd, dd + mm];
+        }
+
+        function checkAdminPasswordAuto() {
+            const entered = (document.getElementById('adminPasswordInput').value || '').trim();
+            document.getElementById('adminPasswordError').classList.add('hidden');
+            if (entered.length === 4 && getValidDatePasswords().includes(entered)) {
+                verifyAdminPassword();
+            }
+        }
+
+        function verifyAdminPassword() {
+            const entered = (document.getElementById('adminPasswordInput').value || '').trim();
+            const validCodes = getValidDatePasswords();
+
+            if (validCodes.includes(entered)) {
+                isAdminAuthenticated = true;
+                closeAdminLoginModal();
+                
+                // Promijeni ikonu lokota u otključano i pokaži gumb za GitHub ako je bio skriven
+                const lockIcon = document.getElementById('adminLockIcon');
+                if (lockIcon) lockIcon.setAttribute('data-lucide', 'settings');
+                document.getElementById('headerGithubBtn').classList.remove('hidden');
+
+                switchMode('admin');
+                showStatus('Successfully logged into the Admin panel!', 'success');
+            } else {
+                const err = document.getElementById('adminPasswordError');
+                err.classList.remove('hidden');
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminPasswordInput').focus();
+            }
+        }
+
+        function updatePortalTitle() {
+            const title = document.getElementById('confTitleInput').value || 'Download Your Certificate';
+            document.getElementById('portalConfTitle').textContent = title;
+        }
+
+        // Normalizacija teksta za pretragu (uklanja razmake, pretvara u mala slova i ujednačava č,ć,ž,š,đ)
+        function normalizeLookupKey(str) {
+            if (!str) return '';
+            return str
+                .toLowerCase()
+                .trim()
+                .replace(/č/g, 'c')
+                .replace(/ć/g, 'c')
+                .replace(/ž/g, 'z')
+                .replace(/š/g, 's')
+                .replace(/đ/g, 'd')
+                .replace(/\s+/g, ' ');
+        }
+
+        // Kriptografski SHA-256 hash za zaštitu popisa na javnom GitHubu
+        async function sha256Hex(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Jednostavno XOR maskiranje/demaskiranje podataka pomoću unesenog ključa sudionika
+        function xorCipher(text, key) {
+            const textBytes = new TextEncoder().encode(text);
+            const keyBytes = new TextEncoder().encode(key);
+            const out = new Uint8Array(textBytes.length);
+            for (let i = 0; i < textBytes.length; i++) {
+                out[i] = textBytes[i] ^ keyBytes[i % keyBytes.length];
+            }
+            return btoa(String.fromCharCode(...out));
+        }
+
+        function xorDecipher(base64Cipher, key) {
+            const binStr = atob(base64Cipher);
+            const cipherBytes = Uint8Array.from(binStr, c => c.charCodeAt(0));
+            const keyBytes = new TextEncoder().encode(key);
+            const out = new Uint8Array(cipherBytes.length);
+            for (let i = 0; i < cipherBytes.length; i++) {
+                out[i] = cipherBytes[i] ^ keyBytes[i % keyBytes.length];
+            }
+            return new TextDecoder().decode(out);
+        }
+
+        // Provjera i pronalazak sudionika po E-mailu ili Imenu i Prezimenu
+        async function verifyAndFindParticipant() {
+            const rawQuery = document.getElementById('lookupQuery').value;
+            const normQuery = normalizeLookupKey(rawQuery);
+            const errorBox = document.getElementById('lookupErrorBox');
+            const resultCard = document.getElementById('lookupResultCard');
+
+            errorBox.classList.add('hidden');
+            resultCard.classList.add('hidden');
+            foundParticipantForPortal = null;
+
+            if (!normQuery) return;
+
+            // 1. Ako je u zaključanom javnom GitHub načinu rada, provjeri preko kriptiranih zapisa
+            if (PUBLIC_PORTAL_LOCKED_CONFIG) {
+                const queryHash = await sha256Hex("certigen_salt_" + normQuery);
+                const matchedRecord = PUBLIC_PORTAL_LOCKED_CONFIG.records.find(
+                    r => r.emailHash === queryHash || r.nameHash === queryHash
+                );
+
+                if (matchedRecord) {
+                    const isEmailMatch = matchedRecord.emailHash === queryHash;
+                    const encryptedPayload = isEmailMatch ? matchedRecord.encByEmail : matchedRecord.encByName;
+                    try {
+                        const decryptedJson = xorDecipher(encryptedPayload, normQuery);
+                        foundParticipantForPortal = JSON.parse(decryptedJson);
+                    } catch (e) {
+                        console.error("Greška pri otključavanju zapisa", e);
+                    }
+                }
+            } else {
+                // 2. Inače pretraži lokalnu aktivnu listu
+                foundParticipantForPortal = participantsList.find(p => {
+                    const normName = normalizeLookupKey(p.name);
+                    const normEmail = normalizeLookupKey(p.email);
+                    return (normEmail && normEmail === normQuery) || (normName === normQuery);
+                });
+            }
+
+            if (!foundParticipantForPortal) {
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            // Prikaži pronađenog sudionika i generiraj njegov PDF pregled
+            document.getElementById('foundParticipantName').textContent = foundParticipantForPortal.name;
+            document.getElementById('foundParticipantId').textContent = foundParticipantForPortal.id;
+            resultCard.classList.remove('hidden');
+
+            try {
+                const pdfBytes = await createCertificatePdfBytes(foundParticipantForPortal);
+                await renderPdfBytesToCanvas(pdfBytes, 'participantPdfCanvas');
+            } catch (err) {
+                console.error("Greška pri prikazu certifikata sudionika:", err);
+            }
+        }
+
+        // Preuzimanje PDF-a za pronađenog sudionika na Portalu
+        async function downloadFoundParticipantPdf() {
+            if (!foundParticipantForPortal || !currentPdfBytes) return;
+            try {
+                const pdfBytes = await createCertificatePdfBytes(foundParticipantForPortal);
+                const safeName = foundParticipantForPortal.name.replace(/[^a-zA-Z0-9čćžšđČĆŽŠĐ_-]/g, '_');
+                const fileName = `Certificate_${foundParticipantForPortal.id}_${safeName}.pdf`;
+                triggerFileDownload(pdfBytes, fileName, 'application/pdf');
+            } catch (e) {
+                showStatus("Error downloading the certificate.", "error");
+            }
+        }
+
+        function fillDemoQuery(q) {
+            document.getElementById('lookupQuery').value = q;
+            verifyAndFindParticipant();
+        }
+
+        // Pomoćne UI funkcije
+        function showStatus(msg, type = 'info') {
+            const banner = document.getElementById('statusBanner');
+            const text = document.getElementById('statusText');
+            const icon = document.getElementById('statusIcon');
+            
+            banner.className = 'mb-6 p-4 rounded-xl border flex items-center justify-between transition-all ';
+            if (type === 'success') {
+                banner.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+                icon.setAttribute('data-lucide', 'check-circle-2');
+            } else if (type === 'error') {
+                banner.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+                icon.setAttribute('data-lucide', 'alert-triangle');
+            } else {
+                banner.classList.add('bg-indigo-50', 'border-indigo-200', 'text-indigo-800');
+                icon.setAttribute('data-lucide', 'info');
+            }
+            
+            text.textContent = msg;
+            banner.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function hideStatus() {
+            document.getElementById('statusBanner').classList.add('hidden');
+        }
+
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.toggle('hidden');
+        }
+
+        function syncSlider(id) {
+            const val = document.getElementById(id).value;
+            document.getElementById(id + 'Val').textContent = val;
+        }
+
+        function toggleNameCenter() {
+            const isCentered = document.getElementById('nameCenter').checked;
+            const xContainer = document.getElementById('nameXContainer');
+            if (isCentered) {
+                xContainer.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                xContainer.classList.remove('opacity-40', 'pointer-events-none');
+            }
+            updatePreview();
+        }
+
+        function toggleIdCenter() {
+            const isCentered = document.getElementById('idCenter').checked;
+            const xContainer = document.getElementById('idXContainer');
+            if (isCentered) {
+                xContainer.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                xContainer.classList.remove('opacity-40', 'pointer-events-none');
+            }
+            updatePreview();
+        }
+
+        // Učitavanje zadanog Roboto TTF fonta za dijakritičke znakove (č, ć, ž, š, đ)
+        async function loadDefaultFont() {
+            try {
+                const res = await fetch(ROBOTO_TTF_URL);
+                if (res.ok) {
+                    customFontBytes = await res.arrayBuffer();
+                }
+            } catch (e) {
+                console.warn("Nije moguće dohvatiti vanjski TTF font, koristit će se standardni Helvetica font.", e);
+            }
+        }
+
+        // Učitavanje vlastitog .TTF/.OTF fonta
+        async function handleCustomFont(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            try {
+                customFontBytes = await file.arrayBuffer();
+                document.getElementById('fontStatusName').textContent = file.name;
+                showStatus(`Successfully loaded font: ${file.name}`, 'success');
+                updatePreview();
+            } catch (e) {
+                showStatus("Error loading custom font.", "error");
+            }
+        }
+
+        // Generiranje estetske pokazne PDF šprance prema priloženom EAGT 2026 dokumentu
+        async function useSamplePdf() {
+            try {
+                const { PDFDocument, rgb, StandardFonts } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+                if (typeof fontkit !== 'undefined') {
+                    pdfDoc.registerFontkit(fontkit);
+                }
+                // A4 Landscape dimenzije (841.89 x 595.28)
+                const page = pdfDoc.addPage([841.89, 595.28]);
+                const { width, height } = page.getSize();
+                
+                const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+                const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                const fontItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+
+                const navyColor = rgb(0.11, 0.21, 0.39); // #1b3664 (EAGT tamnoplava)
+                const slateColor = rgb(0.32, 0.36, 0.42);
+                const lightLine = rgb(0.78, 0.82, 0.88);
+
+                // Vanjski i unutarnji okvir EAGT certifikata
+                page.drawRectangle({
+                    x: 24, y: 24,
+                    width: width - 48, height: height - 48,
+                    borderColor: navyColor,
+                    borderWidth: 2.5,
+                });
+
+                page.drawRectangle({
+                    x: 31, y: 31,
+                    width: width - 62, height: height - 62,
+                    borderColor: lightLine,
+                    borderWidth: 1,
+                });
+
+                // 1. GORNJI LIJEVI KUT: EAGT Logotip (8 kvadrata u krugu) + tekst
+                const logoCenterX = 85;
+                const logoCenterY = height - 80;
+                const offsets = [
+                    { dx: -6, dy: 14 }, { dx: -6, dy: -26 },
+                    { dx: -26, dy: -6 }, { dx: 14, dy: -6 },
+                    { dx: -20, dy: 8 }, { dx: 8, dy: 8 },
+                    { dx: -20, dy: -20 }, { dx: 8, dy: -20 }
+                ];
+                offsets.forEach(pos => {
+                    page.drawRectangle({
+                        x: logoCenterX + pos.dx,
+                        y: logoCenterY + pos.dy,
+                        width: 11,
+                        height: 11,
+                        color: navyColor
+                    });
+                });
+
+                page.drawText("EUROPEAN ASSOCIATION", { x: 115, y: height - 74, size: 9, font: fontBold, color: navyColor });
+                page.drawText("FOR GESTALT THERAPY", { x: 115, y: height - 86, size: 9, font: fontBold, color: navyColor });
+
+                // 2. GORNJI SREDNJI DIO: EAGT CONFERENCE 2026 DUBROVNIK CROATIA - Bridges of Difference
+                const headerConf = "EAGT CONFERENCE 2026 • DUBROVNIK CROATIA";
+                const hcWidth = fontBold.widthOfTextAtSize(headerConf, 11);
+                page.drawText(headerConf, {
+                    x: (width - hcWidth) / 2,
+                    y: height - 72,
+                    size: 11,
+                    font: fontBold,
+                    color: navyColor
+                });
+
+                const bridgeTitle = "Bridges of Difference";
+                const btWidth = fontItalic.widthOfTextAtSize(bridgeTitle, 18);
+                page.drawText(bridgeTitle, {
+                    x: (width - btWidth) / 2,
+                    y: height - 94,
+                    size: 18,
+                    font: fontItalic,
+                    color: navyColor
+                });
+
+                const datesSub = "22ND - 25TH OCTOBER 2026";
+                const dsWidth = fontBold.widthOfTextAtSize(datesSub, 8.5);
+                page.drawText(datesSub, {
+                    x: (width - dsWidth) / 2,
+                    y: height - 109,
+                    size: 8.5,
+                    font: fontBold,
+                    color: slateColor
+                });
+
+                // 3. GORNJI DESNI KUT: DGIPH službeni logotip (vektorski simbol + tekst)
+                const dgCenterX = width - 115;
+                const dgTopY = height - 62;
+                const accentBlue = rgb(0.18, 0.35, 0.62);
+
+                // Gornji dvostruki luk (simbol povezivanja / mosta)
+                page.drawSvgPath('M -32,6 Q 0,-14 32,6', {
+                    x: dgCenterX,
+                    y: dgTopY,
+                    borderColor: navyColor,
+                    borderWidth: 3
+                });
+                page.drawSvgPath('M -22,12 Q 0,-4 22,12', {
+                    x: dgCenterX,
+                    y: dgTopY,
+                    borderColor: accentBlue,
+                    borderWidth: 2.2
+                });
+
+                // Dvije stilizirane figure u kontaktu (Gestalt dijada)
+                page.drawCircle({
+                    x: dgCenterX - 10,
+                    y: dgTopY - 12,
+                    size: 4.2,
+                    color: navyColor
+                });
+                page.drawSvgPath('M -20,24 Q -10,13 0,24', {
+                    x: dgCenterX,
+                    y: dgTopY,
+                    borderColor: navyColor,
+                    borderWidth: 2.5
+                });
+
+                page.drawCircle({
+                    x: dgCenterX + 10,
+                    y: dgTopY - 12,
+                    size: 4.2,
+                    color: accentBlue
+                });
+                page.drawSvgPath('M 0,24 Q 10,13 20,24', {
+                    x: dgCenterX,
+                    y: dgTopY,
+                    borderColor: accentBlue,
+                    borderWidth: 2.5
+                });
+
+                // Ispis DGIPH naziva i punog imena udruge ispod simbola
+                const dgTitle = "DGIPH";
+                const dgTitleW = fontBold.widthOfTextAtSize(dgTitle, 14);
+                page.drawText(dgTitle, {
+                    x: dgCenterX - (dgTitleW / 2),
+                    y: height - 99,
+                    size: 14,
+                    font: fontBold,
+                    color: navyColor
+                });
+
+                const dgSub1 = "Drustvo gestalt i integrativnih";
+                const dgSub2 = "psihoterapeuta Hrvatske";
+                const dgSub1W = fontRegular.widthOfTextAtSize(dgSub1, 6.5);
+                const dgSub2W = fontRegular.widthOfTextAtSize(dgSub2, 6.5);
+                page.drawText(dgSub1, {
+                    x: dgCenterX - (dgSub1W / 2),
+                    y: height - 108,
+                    size: 6.5,
+                    font: fontRegular,
+                    color: slateColor
+                });
+                page.drawText(dgSub2, {
+                    x: dgCenterX - (dgSub2W / 2),
+                    y: height - 116,
+                    size: 6.5,
+                    font: fontRegular,
+                    color: slateColor
+                });
+
+                // 4. SREDIŠNJI NASLOV: CERTIFICATE OF ATTENDANCE
+                const title = "CERTIFICATE OF ATTENDANCE";
+                const titleWidth = fontBold.widthOfTextAtSize(title, 26);
+                page.drawText(title, {
+                    x: (width - titleWidth) / 2,
+                    y: height - 175,
+                    size: 26,
+                    font: fontBold,
+                    color: navyColor
+                });
+
+                const certifyLine = "This is to certify that";
+                const clWidth = fontRegular.widthOfTextAtSize(certifyLine, 13);
+                page.drawText(certifyLine, {
+                    x: (width - clWidth) / 2,
+                    y: height - 210,
+                    size: 13,
+                    font: fontRegular,
+                    color: slateColor
+                });
+
+                // Diskretna linija ispod imena i prezimena sudionika (Y = 300)
+                page.drawLine({
+                    start: { x: 200, y: 298 },
+                    end: { x: width - 200, y: 298 },
+                    thickness: 0.9,
+                    color: lightLine,
+                });
+
+                // 5. TEKST SUDJELOVANJA (ispod imena sudionika)
+                const bodyLine1 = "has attended the conference organized by the European Association for Gestalt Therapy (EAGT),";
+                const bodyLine2 = "held from 22 to 25 October 2026 in Dubrovnik, Croatia, and has completed a total of 24 hours of";
+                const bodyLine3 = "professional engagement.";
+
+                const bl1W = fontRegular.widthOfTextAtSize(bodyLine1, 12.5);
+                const bl2W = fontRegular.widthOfTextAtSize(bodyLine2, 12.5);
+                const bl3W = fontRegular.widthOfTextAtSize(bodyLine3, 12.5);
+
+                page.drawText(bodyLine1, { x: (width - bl1W) / 2, y: 262, size: 12.5, font: fontRegular, color: slateColor });
+                page.drawText(bodyLine2, { x: (width - bl2W) / 2, y: 243, size: 12.5, font: fontRegular, color: slateColor });
+                page.drawText(bodyLine3, { x: (width - bl3W) / 2, y: 224, size: 12.5, font: fontRegular, color: slateColor });
+
+                // 6. POTPISI (3 potpisnika iz dokumenta s realističnim potpisima u plavoj boji kemijske)
+                const sigY = 115;
+                const ballpointBlue = rgb(0.08, 0.27, 0.68); // Plava boja kemijske olovke
+
+                // Potpis 1: Michal Lewandowski (rukopisni vektorski potpis u boji kemijske)
+                page.drawSvgPath('M 96,130 C 102,110 112,148 118,125 C 122,116 128,134 134,126 C 140,120 146,133 152,126 C 158,112 164,145 170,125 C 176,118 184,132 192,124 C 200,119 212,128 224,122', {
+                    x: 0, y: sigY + 158,
+                    borderColor: ballpointBlue,
+                    borderWidth: 1.5
+                });
+                page.drawSvgPath('M 105,134 Q 160,126 218,132', {
+                    x: 0, y: sigY + 158,
+                    borderColor: ballpointBlue,
+                    borderWidth: 1.0
+                });
+                page.drawLine({ start: { x: 75, y: sigY + 10 }, end: { x: 245, y: sigY + 10 }, thickness: 0.8, color: lightLine });
+                page.drawText("Michal Lewandowski", { x: 102, y: sigY - 4, size: 10, font: fontBold, color: navyColor });
+                page.drawText("President of EAGT", { x: 112, y: sigY - 17, size: 9, font: fontRegular, color: slateColor });
+
+                // Potpis 2: Talia Bar-Yoseph Levine (rukopisni potpis "Talia" u boji kemijske)
+                page.drawSvgPath('M 382,114 L 424,112 M 398,113 C 395,126 392,136 390,140 C 398,136 404,122 410,132 C 415,120 420,136 426,126 C 432,122 440,130 448,124', {
+                    x: 0, y: sigY + 158,
+                    borderColor: ballpointBlue,
+                    borderWidth: 1.6
+                });
+                page.drawLine({ start: { x: 330, y: sigY + 10 }, end: { x: 510, y: sigY + 10 }, thickness: 0.8, color: lightLine });
+                page.drawText("Talia Bar-Yoseph Levine", { x: 358, y: sigY - 4, size: 10, font: fontBold, color: navyColor });
+                page.drawText("EAGT Conference Committee Chair", { x: 342, y: sigY - 17, size: 9, font: fontRegular, color: slateColor });
+
+                // Potpis 3: Marija Roth Jelisavčić (rukopisni potpis s hrvatskim dijakritičkim znakovima u boji kemijske)
+                let fontRegularCustom = fontBold;
+                if (customFontBytes && typeof fontkit !== 'undefined') {
+                    try {
+                        fontRegularCustom = await pdfDoc.embedFont(customFontBytes);
+                    } catch (_) {}
+                }
+                page.drawSvgPath('M 605,134 C 610,112 616,138 622,116 C 626,132 632,122 638,128 C 645,114 654,135 662,124 C 668,120 675,132 682,126 C 690,112 698,142 704,125 C 712,118 724,132 736,124 C 742,120 750,128 756,122', {
+                    x: 0, y: sigY + 158,
+                    borderColor: ballpointBlue,
+                    borderWidth: 1.4
+                });
+                page.drawLine({ start: { x: 590, y: sigY + 10 }, end: { x: 765, y: sigY + 10 }, thickness: 0.8, color: lightLine });
+                page.drawText(fontRegularCustom !== fontBold ? "Marija Roth Jelisavčić" : "Marija Roth Jelisavcic", { x: 620, y: sigY - 4, size: 10, font: fontRegularCustom, color: navyColor });
+                page.drawText("President of DGIPH", { x: 633, y: sigY - 17, size: 9, font: fontRegular, color: slateColor });
+
+                currentPdfBytes = await pdfDoc.save();
+                document.getElementById('pdfFileName').textContent = "certificate.pdf";
+                setupSlidersForPdfDimensions(width, height, true);
+                updatePreview();
+            } catch (e) {
+                console.error("Greška pri kreiranju testnog PDF-a:", e);
+            }
+        }
+
+        // Učitavanje korisničke PDF šprance
+        async function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                const pages = pdfDoc.getPages();
+                
+                if (pages.length === 0) {
+                    showStatus("The selected PDF has no pages.", "error");
+                    return;
+                }
+
+                const { width, height } = pages[0].getSize();
+                currentPdfBytes = arrayBuffer;
+
+                document.getElementById('pdfFileName').textContent = file.name;
+                setupSlidersForPdfDimensions(width, height, false);
+                showStatus(`Successfully loaded PDF template (${Math.round(width)} x ${Math.round(height)} pt).`, 'success');
+                updatePreview();
+            } catch (err) {
+                console.error(err);
+                showStatus("Error loading PDF file. Please verify the file is valid and not password-protected.", "error");
+            }
+        }
+
+        // Prilagodba klizača (slidera) stvarnim dimenzijama PDF-a
+        function setupSlidersForPdfDimensions(width, height, isSample) {
+            pdfPageWidth = Math.round(width);
+            pdfPageHeight = Math.round(height);
+
+            document.getElementById('pdfDimensions').textContent = `Dimensions: ${pdfPageWidth} x ${pdfPageHeight} pt`;
+
+            const nameX = document.getElementById('nameX');
+            const nameY = document.getElementById('nameY');
+            const idX = document.getElementById('idX');
+            const idY = document.getElementById('idY');
+
+            nameX.max = pdfPageWidth;
+            nameY.max = pdfPageHeight;
+            idX.max = pdfPageWidth;
+            idY.max = pdfPageHeight;
+
+            if (isSample) {
+                nameX.value = Math.round(pdfPageWidth / 2);
+                nameY.value = 312;
+                idX.value = Math.round(pdfPageWidth / 2);
+                idY.value = 48;
+            } else {
+                // Postavi razumne početne vrijednosti unutar novog dokumenta
+                if (nameY.value > pdfPageHeight) nameY.value = Math.round(pdfPageHeight / 2);
+                if (idX.value > pdfPageWidth) idX.value = Math.round(pdfPageWidth / 2);
+                if (idY.value > pdfPageHeight) idY.value = 48;
+            }
+
+            syncSlider('nameX');
+            syncSlider('nameY');
+            syncSlider('idX');
+            syncSlider('idY');
+        }
+
+        // Učitavanje CSV datoteke s popisom korisnika
+        function handleCsvUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const rows = results.data;
+                    if (!rows || rows.length === 0) return;
+
+                    let extractedLines = [];
+                    
+                    // Provjeri ima li zaglavlje (npr. "Ime", "Prezime", "ID")
+                    let startIdx = 0;
+                    const firstRowStr = rows[0].join(' ').toLowerCase();
+                    if (firstRowStr.includes('ime') || firstRowStr.includes('name') || firstRowStr.includes('sudionik')) {
+                        startIdx = 1;
+                    }
+
+                    for (let i = startIdx; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row.length === 1 && row[0].trim()) {
+                            extractedLines.push(row[0].trim());
+                        } else if (row.length >= 2) {
+                            const col1 = (row[0] || '').trim();
+                            const col2 = (row[1] || '').trim();
+                            const col3 = (row[2] || '').trim();
+                            const col4 = (row[3] || '').trim();
+
+                            // Ako su stupci: Ime, Prezime, Email, ID
+                            if (col3 && col3.includes('@')) {
+                                extractedLines.push(col4 ? `${col1} ${col2}, ${col3}, ${col4}` : `${col1} ${col2}, ${col3}`);
+                            } else if (col2.includes('@')) {
+                                // Ako su stupci: Ime i Prezime, Email, [ID]
+                                extractedLines.push(col3 ? `${col1}, ${col2}, ${col3}` : `${col1}, ${col2}`);
+                            } else if (/^\d{2}-\d{3}$/.test(col2)) {
+                                extractedLines.push(`${col1}, , ${col2}`);
+                            } else {
+                                extractedLines.push([col1, col2, col3].filter(Boolean).join(', '));
+                            }
+                        }
+                    }
+
+                    document.getElementById('participantsInput').value = extractedLines.join('\n');
+                    parseParticipants();
+                    showStatus(`Loaded ${extractedLines.length} participants from CSV file.`, 'success');
+                }
+            });
+        }
+
+        // Parsiranje sudionika (Ime Prezime, E-mail, [ID xx-xxx])
+        function parseParticipants() {
+            const rawText = document.getElementById('participantsInput').value;
+            const prefix = (document.getElementById('idPrefix').value || '00').trim().padStart(2, '0');
+            const startNum = parseInt(document.getElementById('idStartNum').value, 10) || 1;
+            const mode = document.getElementById('idGenerationMode').value;
+
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const usedIds = new Set();
+            participantsList = [];
+
+            lines.forEach((line, idx) => {
+                let name = line;
+                let email = '';
+                let customId = null;
+
+                // Dijelimo po zarezu ili točki sa zarezom: "Ime Prezime, email@domena.hr, 26-042"
+                const parts = line.split(/[,;]/).map(p => p.trim()).filter(p => p.length > 0);
+                if (parts.length > 0) {
+                    name = parts[0];
+                    for (let i = 1; i < parts.length; i++) {
+                        if (parts[i].includes('@')) {
+                            email = parts[i];
+                        } else {
+                            customId = parts[i];
+                        }
+                    }
+                }
+
+                let finalId = customId;
+                if (!finalId) {
+                    if (mode === 'seq') {
+                        const numStr = String(startNum + idx).padStart(3, '0');
+                        finalId = `${prefix}-${numStr}`;
+                    } else {
+                        // Nasumični troznamenkasti broj (unikatni)
+                        let randNum;
+                        let attempts = 0;
+                        do {
+                            randNum = String(Math.floor(100 + Math.random() * 900));
+                            finalId = `${prefix}-${randNum}`;
+                            attempts++;
+                        } while (usedIds.has(finalId) && attempts < 1000);
+                    }
+                }
+
+                usedIds.add(finalId);
+                participantsList.push({
+                    index: idx + 1,
+                    name: name,
+                    email: email,
+                    id: finalId
+                });
+            });
+
+            // Ažuriraj prikaz primjera ID-a
+            const exampleNum = String(startNum).padStart(3, '0');
+            document.getElementById('idExamplePreview').textContent = `Example: ${prefix}-${exampleNum}`;
+            document.getElementById('participantCountBadge').textContent = participantsList.length;
+
+            if (selectedParticipantIndex >= participantsList.length) {
+                selectedParticipantIndex = 0;
+            }
+
+            renderParticipantsTable();
+            renderDemoHints();
+            triggerDebouncedPreview();
+        }
+
+        // Prikaz brzih testnih gumba ispod tražilice na portalu
+        function renderDemoHints() {
+            const container = document.getElementById('demoPillsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            participantsList.slice(0, 4).forEach(p => {
+                const sampleQuery = p.email || p.name;
+                const btn = document.createElement('button');
+                btn.className = "text-xs bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors font-mono";
+                btn.textContent = sampleQuery;
+                btn.onclick = () => fillDemoQuery(sampleQuery);
+                container.appendChild(btn);
+            });
+        }
+
+        // Prikaz tablice sudionika u Admin pogledu
+        function renderParticipantsTable() {
+            const tbody = document.getElementById('participantsTableBody');
+            tbody.innerHTML = '';
+
+            if (participantsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">No participants entered. Add names and emails in the field on the left.</td></tr>`;
+                return;
+            }
+
+            participantsList.forEach((p, idx) => {
+                const isSelected = idx === selectedParticipantIndex;
+                const tr = document.createElement('tr');
+                tr.className = `cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50/90 font-medium' : 'hover:bg-slate-50'}`;
+                tr.onclick = () => selectParticipantForPreview(idx);
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-4 text-slate-400 font-mono text-xs">${p.index}</td>
+                    <td class="py-2.5 px-4 text-slate-800">${escapeHtml(p.name)}</td>
+                    <td class="py-2.5 px-4 text-slate-500 text-xs font-mono">${p.email ? escapeHtml(p.email) : '<span class="text-slate-300 italic">name only</span>'}</td>
+                    <td class="py-2.5 px-4">
+                        <span class="font-mono text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${escapeHtml(p.id)}</span>
+                    </td>
+                    <td class="py-2.5 px-4 text-right">
+                        <button onclick="event.stopPropagation(); downloadSingleCertificate(${idx})" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-2 py-1 rounded hover:bg-indigo-100 transition-colors inline-flex items-center gap-1" title="Download this PDF only">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> PDF
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function selectParticipantForPreview(idx) {
+            selectedParticipantIndex = idx;
+            renderParticipantsTable();
+            updatePreview();
+        }
+
+        function triggerDebouncedPreview() {
+            if (previewDebounceTimer) clearTimeout(previewDebounceTimer);
+            previewDebounceTimer = setTimeout(() => {
+                updatePreview();
+            }, 300);
+        }
+
+        // Pomoćna funkcija za pretvaranje HEX boje u RGB (0-1) za pdf-lib
+        function hexToPdfRgb(hex) {
+            const cleanHex = hex.replace('#', '');
+            const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+            const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+            const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+            return PDFLib.rgb(r, g, b);
+        }
+
+        // Glavna funkcija koja generira pojedinačni PDF dokument za sudionika
+        async function createCertificatePdfBytes(participant) {
+            const { PDFDocument, StandardFonts } = PDFLib;
+            const pdfDoc = await PDFDocument.load(currentPdfBytes);
+            
+            // Registriraj fontkit kako bismo mogli ugraditi TTF font s podrškom za č, ć, ž, š, đ
+            pdfDoc.registerFontkit(fontkit);
+
+            let embeddedFont;
+            if (customFontBytes) {
+                embeddedFont = await pdfDoc.embedFont(customFontBytes);
+            } else {
+                embeddedFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            }
+
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+            const { width } = firstPage.getSize();
+
+            // Čitanje postavki iz sučelja
+            const isNameCentered = document.getElementById('nameCenter').checked;
+            let nameX = parseFloat(document.getElementById('nameX').value) || 0;
+            const nameY = parseFloat(document.getElementById('nameY').value) || 0;
+            const nameSize = parseFloat(document.getElementById('nameSize').value) || 32;
+            const nameColorHex = document.getElementById('nameColor').value;
+
+            const isIdCentered = document.getElementById('idCenter') ? document.getElementById('idCenter').checked : true;
+            let idX = parseFloat(document.getElementById('idX').value) || 0;
+            const idY = parseFloat(document.getElementById('idY').value) || 0;
+            const idSize = parseFloat(document.getElementById('idSize').value) || 10;
+            const idColorHex = document.getElementById('idColor').value;
+            const idLabel = document.getElementById('idLabelText').value || '';
+
+            document.getElementById('nameColorHex').textContent = nameColorHex;
+            document.getElementById('idColorHex').textContent = idColorHex;
+
+            // Izračunaj centriranje za Ime i Prezime
+            const nameText = participant.name;
+            if (isNameCentered) {
+                const textWidth = embeddedFont.widthOfTextAtSize(nameText, nameSize);
+                nameX = (width - textWidth) / 2;
+                document.getElementById('nameX').value = Math.round(nameX);
+                syncSlider('nameX');
+            }
+
+            // Ispis Imena i Prezimena
+            firstPage.drawText(nameText, {
+                x: nameX,
+                y: nameY,
+                size: nameSize,
+                font: embeddedFont,
+                color: hexToPdfRgb(nameColorHex)
+            });
+
+            // Ispis ID broja certifikata (xx-xxx) - automatski centrirano na sredini dna
+            const fullIdText = `${idLabel}${participant.id}`;
+            if (isIdCentered) {
+                const idTextWidth = embeddedFont.widthOfTextAtSize(fullIdText, idSize);
+                idX = (width - idTextWidth) / 2;
+                document.getElementById('idX').value = Math.round(idX);
+                syncSlider('idX');
+            }
+            firstPage.drawText(fullIdText, {
+                x: idX,
+                y: idY,
+                size: idSize,
+                font: embeddedFont,
+                color: hexToPdfRgb(idColorHex)
+            });
+
+            return await pdfDoc.save();
+        }
+
+        // Ažuriranje pregleda uživo u iframeu
+        async function updatePreview() {
+            if (!currentPdfBytes) return;
+
+            const loader = document.getElementById('previewLoader');
+            loader.classList.remove('hidden');
+
+            try {
+                const sampleParticipant = participantsList[selectedParticipantIndex] || {
+                    name: "Full Name",
+                    id: "26-001"
+                };
+
+                document.getElementById('previewParticipantName').textContent = 
+                    `Preview: ${sampleParticipant.name} (${sampleParticipant.id})`;
+
+                const pdfBytes = await createCertificatePdfBytes(sampleParticipant);
+                await renderPdfBytesToCanvas(pdfBytes, 'pdfPreviewCanvas');
+            } catch (err) {
+                console.error("Error generating preview:", err);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Preuzimanje pojedinačnog certifikata
+        async function downloadSingleCertificate(idx) {
+            const participant = participantsList[idx];
+            if (!participant || !currentPdfBytes) return;
+
+            try {
+                const pdfBytes = await createCertificatePdfBytes(participant);
+                const safeName = participant.name.replace(/[^a-zA-Z0-9čćžšđČĆŽŠĐ_-]/g, '_');
+                const fileName = `Certificate_${participant.id}_${safeName}.pdf`;
+                triggerFileDownload(pdfBytes, fileName, 'application/pdf');
+            } catch (e) {
+                showStatus("Error generating certificate.", "error");
+            }
+        }
+
+        // Masovno generiranje SVIH certifikata u .ZIP arhivu
+        async function generateAllZip() {
+            if (participantsList.length === 0 || !currentPdfBytes) {
+                showStatus("Please enter at least one participant and upload a PDF template.", "error");
+                return;
+            }
+
+            const progressContainer = document.getElementById('batchProgressContainer');
+            const progressBar = document.getElementById('batchProgressBar');
+            const progressText = document.getElementById('batchProgressText');
+            const progressPercent = document.getElementById('batchProgressPercent');
+            const btnZip = document.getElementById('btnZipAll');
+
+            progressContainer.classList.remove('hidden');
+            btnZip.disabled = true;
+            btnZip.classList.add('opacity-50');
+
+            try {
+                const zip = new JSZip();
+                const folder = zip.folder("Certificates");
+
+                for (let i = 0; i < participantsList.length; i++) {
+                    const p = participantsList[i];
+                    const percent = Math.round(((i + 1) / participantsList.length) * 100);
+                    
+                    progressText.textContent = `Generating (${i + 1}/${participantsList.length}): ${p.name}...`;
+                    progressPercent.textContent = `${percent}%`;
+                    progressBar.style.width = `${percent}%`;
+
+                    const pdfBytes = await createCertificatePdfBytes(p);
+                    const safeName = p.name.replace(/[^a-zA-Z0-9čćžšđČĆŽŠĐ_-]/g, '_');
+                    folder.file(`Certificate_${p.id}_${safeName}.pdf`, pdfBytes);
+
+                    // Kratka pauza da se UI osvježi
+                    await new Promise(r => setTimeout(r, 10));
+                }
+
+                // Dodaj i CSV popis svih generiranih ID-eva u ZIP radi lakše evidencije
+                const csvContent = "No,Full_Name,Email,Certificate_ID\n" + 
+                    participantsList.map(p => `${p.index},"${p.name}","${p.email || ''}",${p.id}`).join("\n");
+                zip.file("Certificate_Registry.csv", "\uFEFF" + csvContent);
+
+                progressText.textContent = "Packaging into ZIP archive...";
+                const zipBlob = await zip.generateAsync({ type: "blob" });
+                
+                const prefix = document.getElementById('idPrefix').value || 'Conference';
+                triggerBlobDownload(zipBlob, `Certificates_${prefix}_All.zip`);
+                showStatus(`Successfully generated and downloaded ${participantsList.length} certificates in a ZIP archive!`, 'success');
+            } catch (err) {
+                console.error(err);
+                showStatus("An error occurred during batch generation.", "error");
+            } finally {
+                setTimeout(() => {
+                    progressContainer.classList.add('hidden');
+                    btnZip.disabled = false;
+                    btnZip.classList.remove('opacity-50');
+                }, 800);
+            }
+        }
+
+        // Generiranje jednog spojenog PDF-a sa svim certifikatima (za brzi ispis)
+        async function generateAllMergedPdf() {
+            if (participantsList.length === 0 || !currentPdfBytes) {
+                showStatus("Please enter at least one participant and upload a PDF template.", "error");
+                return;
+            }
+
+            const progressContainer = document.getElementById('batchProgressContainer');
+            const progressBar = document.getElementById('batchProgressBar');
+            const progressText = document.getElementById('batchProgressText');
+            const progressPercent = document.getElementById('batchProgressPercent');
+            const btnMerged = document.getElementById('btnMergedPdf');
+
+            progressContainer.classList.remove('hidden');
+            btnMerged.disabled = true;
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const mergedPdf = await PDFDocument.create();
+
+                for (let i = 0; i < participantsList.length; i++) {
+                    const p = participantsList[i];
+                    const percent = Math.round(((i + 1) / participantsList.length) * 100);
+                    
+                    progressText.textContent = `Merging (${i + 1}/${participantsList.length}): ${p.name}...`;
+                    progressPercent.textContent = `${percent}%`;
+                    progressBar.style.width = `${percent}%`;
+
+                    const singleBytes = await createCertificatePdfBytes(p);
+                    const singleDoc = await PDFDocument.load(singleBytes);
+                    const copiedPages = await mergedPdf.copyPages(singleDoc, [0]);
+                    mergedPdf.addPage(copiedPages[0]);
+
+                    await new Promise(r => setTimeout(r, 10));
+                }
+
+                const mergedBytes = await mergedPdf.save();
+                const prefix = document.getElementById('idPrefix').value || 'Conference';
+                triggerFileDownload(mergedBytes, `All_Certificates_Merged_${prefix}.pdf`, 'application/pdf');
+                showStatus("Merged PDF with all certificates has been downloaded!", 'success');
+            } catch (err) {
+                console.error(err);
+                showStatus("Error merging PDF documents.", "error");
+            } finally {
+                setTimeout(() => {
+                    progressContainer.classList.add('hidden');
+                    btnMerged.disabled = false;
+                }, 800);
+            }
+        }
+
+        // Pretvaranje ArrayBuffera u Base64 string (za ugradnju PDF šprance u javni HTML)
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function base64ToUint8Array(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        // Izvoz zaključane javne index.html datoteke za GitHub Pages
+        async function exportPublicPortalHtml() {
+            if (participantsList.length === 0 || !currentPdfBytes) {
+                showStatus("Please enter a participant list and PDF template before exporting the portal.", "error");
+                return;
+            }
+
+            try {
+                // Kriptiraj zapise sudionika tako da se u HTML kodu ne vide e-mailovi ni imena
+                const encryptedRecords = [];
+                for (const p of participantsList) {
+                    const normName = normalizeLookupKey(p.name);
+                    const normEmail = normalizeLookupKey(p.email);
+                    const payloadStr = JSON.stringify({ name: p.name, id: p.id });
+
+                    const nameHash = await sha256Hex("certigen_salt_" + normName);
+                    const emailHash = normEmail ? await sha256Hex("certigen_salt_" + normEmail) : null;
+
+                    encryptedRecords.push({
+                        nameHash: nameHash,
+                        emailHash: emailHash,
+                        encByName: xorCipher(payloadStr, normName),
+                        encByEmail: normEmail ? xorCipher(payloadStr, normEmail) : null
+                    });
+                }
+
+                const exportConfig = {
+                    conferenceTitle: document.getElementById('confTitleInput').value || 'Preuzmite svoj certifikat',
+                    pdfBase64: arrayBufferToBase64(currentPdfBytes),
+                    settings: {
+                        nameCenter: document.getElementById('nameCenter').checked,
+                        nameX: document.getElementById('nameX').value,
+                        nameY: document.getElementById('nameY').value,
+                        nameSize: document.getElementById('nameSize').value,
+                        nameColor: document.getElementById('nameColor').value,
+                        idCenter: document.getElementById('idCenter').checked,
+                        idX: document.getElementById('idX').value,
+                        idY: document.getElementById('idY').value,
+                        idSize: document.getElementById('idSize').value,
+                        idColor: document.getElementById('idColor').value,
+                        idLabelText: document.getElementById('idLabelText').value
+                    },
+                    records: encryptedRecords
+                };
+
+                // Dohvati izvorni HTML dokument i ugradi konfiguraciju
+                let fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+                fullHtml = fullHtml.replace(
+                    "const PUBLIC_PORTAL_LOCKED_CONFIG = null; // __PUBLIC_CONFIG_PLACEHOLDER__",
+                    `const PUBLIC_PORTAL_LOCKED_CONFIG = ${JSON.stringify(exportConfig)};`
+                );
+
+                const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+                triggerBlobDownload(blob, "index.html");
+                showStatus("Successfully downloaded the public 'index.html' file! Upload it to your GitHub Pages repository.", "success");
+            } catch (err) {
+                console.error(err);
+                showStatus("Error exporting the public portal.", "error");
+            }
+        }
+
+        // Inicijalizacija kada sudionik otvori javni GitHub Pages link
+        function initLockedPublicPortal(config) {
+            // Sakrij testne primjere i gumb za objavu dok se admin ne prijavi šifrom
+            document.getElementById('headerGithubBtn').classList.add('hidden');
+            document.getElementById('demoHintsBox').classList.add('hidden');
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('participantView').classList.remove('hidden');
+
+            document.getElementById('portalConfTitle').textContent = config.conferenceTitle;
+            document.getElementById('headerSubtitle').textContent = config.conferenceTitle;
+
+            // Učitaj ugrađenu PDF šprancu i koordinate
+            currentPdfBytes = base64ToUint8Array(config.pdfBase64);
+            document.getElementById('nameCenter').checked = config.settings.nameCenter;
+            document.getElementById('nameX').value = config.settings.nameX;
+            document.getElementById('nameY').value = config.settings.nameY;
+            document.getElementById('nameSize').value = config.settings.nameSize;
+            document.getElementById('nameColor').value = config.settings.nameColor;
+            if (document.getElementById('idCenter')) {
+                document.getElementById('idCenter').checked = config.settings.idCenter !== undefined ? config.settings.idCenter : true;
+            }
+            document.getElementById('idX').value = config.settings.idX;
+            document.getElementById('idY').value = config.settings.idY;
+            document.getElementById('idSize').value = config.settings.idSize;
+            document.getElementById('idColor').value = config.settings.idColor;
+            document.getElementById('idLabelText').value = config.settings.idLabelText;
+        }
+
+        // Pomoćne funkcije za preuzimanje datoteka u pregledniku
+        function triggerFileDownload(bytes, fileName, mimeType) {
+            const blob = new Blob([bytes], { type: mimeType });
+            triggerBlobDownload(blob, fileName);
+        }
+
+        function triggerBlobDownload(blob, fileName) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+            );
+        }
+    </script>
+</body>
+</html>
