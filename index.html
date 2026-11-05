@@ -732,9 +732,41 @@
         let pdfPageHeight = 595.28;
         let previewDebounceTimer = null;
         let isAdminAuthenticated = false;
+        let isUsingExternalCertificatePdf = false;
 
         // URL pouzdanog TTF fonta s podrškom za hrvatske dijakritičke znakove (Roboto Regular)
         const ROBOTO_TTF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
+
+        // Automatski pokušaj dohvatiti './certificate.pdf' iz istog GitHub direktorija
+        async function tryLoadRepoCertificatePdf() {
+            try {
+                const response = await fetch('./certificate.pdf?v=' + Date.now(), { cache: 'no-store' });
+                if (!response.ok) return false;
+                const contentType = response.headers.get('content-type') || '';
+                const buffer = await response.arrayBuffer();
+                if (buffer.byteLength < 100) return false;
+
+                // Provjeri počinje li datoteka s %PDF-
+                const headerBytes = new Uint8Array(buffer.slice(0, 5));
+                const headerStr = String.fromCharCode(...headerBytes);
+                if (!headerStr.startsWith('%PDF-')) return false;
+
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await PDFDocument.load(buffer);
+                const pages = pdfDoc.getPages();
+                if (pages.length === 0) return false;
+
+                const { width, height } = pages[0].getSize();
+                currentPdfBytes = buffer;
+                isUsingExternalCertificatePdf = true;
+                document.getElementById('pdfFileName').textContent = "certificate.pdf (loaded from repository)";
+                setupSlidersForPdfDimensions(width, height, true);
+                updatePreview();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
 
         // Pokretanje pri učitavanju stranice
         window.onload = async function() {
@@ -742,7 +774,7 @@
 
             // Provjeri je li ovo izvezena javna verzija za GitHub (samo za sudionike)
             if (PUBLIC_PORTAL_LOCKED_CONFIG) {
-                initLockedPublicPortal(PUBLIC_PORTAL_LOCKED_CONFIG);
+                await initLockedPublicPortal(PUBLIC_PORTAL_LOCKED_CONFIG);
                 return;
             }
 
@@ -751,7 +783,11 @@
                 "Test Participant, example@mail.com\nMarija Roth Jelisavčić, mareroth@yahoo.com\nChristopher Green-Wilson, christopher.gw@email.com\nAna Anić, ana.anic@email.hr\nMarko Marković, marko.markovic@tvrtka.hr\nIvana Horvat-Čolak, ivana.horvat@domena.hr\nStjepan Đurić, stjepan.duric@primjer.hr\nŽeljka Šimić, zeljka.simic@konferencija.hr, 26-999";
             
             parseParticipants();
-            await useSamplePdf();
+            // Prvo pokušaj učitati 'certificate.pdf' iz repozitorija, a ako ne postoji koristi ugrađeni predložak
+            const loadedFromRepo = await tryLoadRepoCertificatePdf();
+            if (!loadedFromRepo) {
+                await useSamplePdf();
+            }
             updatePortalTitle();
         };
 
@@ -1050,7 +1086,13 @@
 
         // Generiranje estetske pokazne PDF šprance prema priloženom EAGT 2026 dokumentu
         async function useSamplePdf() {
+            const loadedFromRepo = await tryLoadRepoCertificatePdf();
+            if (loadedFromRepo) {
+                showStatus("Loaded certificate.pdf from repository!", "success");
+                return;
+            }
             try {
+                isUsingExternalCertificatePdf = false;
                 const { PDFDocument, rgb, StandardFonts } = PDFLib;
                 const pdfDoc = await PDFDocument.create();
                 if (typeof fontkit !== 'undefined') {
@@ -1326,6 +1368,7 @@
 
                 const { width, height } = pages[0].getSize();
                 currentPdfBytes = arrayBuffer;
+                isUsingExternalCertificatePdf = true;
 
                 document.getElementById('pdfFileName').textContent = file.name;
                 setupSlidersForPdfDimensions(width, height, false);
@@ -1356,9 +1399,9 @@
 
             if (isSample) {
                 nameX.value = Math.round(pdfPageWidth / 2);
-                nameY.value = 312;
+                nameY.value = isUsingExternalCertificatePdf ? Math.round(pdfPageHeight * 0.515) : 312;
                 idX.value = Math.round(pdfPageWidth / 2);
-                idY.value = 48;
+                idY.value = isUsingExternalCertificatePdf ? Math.round(pdfPageHeight * 0.074) : 48;
             } else {
                 // Postavi razumne početne vrijednosti unutar novog dokumenta
                 if (nameY.value > pdfPageHeight) nameY.value = Math.round(pdfPageHeight / 2);
@@ -1582,7 +1625,7 @@
 
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
-            const { width } = firstPage.getSize();
+            const { width, height } = firstPage.getSize();
 
             // Čitanje postavki iz sučelja
             const isNameCentered = document.getElementById('nameCenter').checked;
@@ -1600,6 +1643,24 @@
 
             document.getElementById('nameColorHex').textContent = nameColorHex;
             document.getElementById('idColorHex').textContent = idColorHex;
+
+            // Ako koristimo učitani certificate.pdf koji već ima ogledno ime ("Christopher Green-Wilson") ili "Certificate ID: xxxxx", prekrij ih bijelim pravokutnikom
+            if (isUsingExternalCertificatePdf) {
+                firstPage.drawRectangle({
+                    x: width * 0.12,
+                    y: nameY - (nameSize * 0.32),
+                    width: width * 0.76,
+                    height: nameSize * 1.38,
+                    color: PDFLib.rgb(1, 1, 1)
+                });
+                firstPage.drawRectangle({
+                    x: width * 0.25,
+                    y: idY - (idSize * 0.35),
+                    width: width * 0.50,
+                    height: idSize * 1.6,
+                    color: PDFLib.rgb(1, 1, 1)
+                });
+            }
 
             // Izračunaj centriranje za Ime i Prezime
             const nameText = participant.name;
@@ -1876,7 +1937,7 @@
         }
 
         // Inicijalizacija kada sudionik otvori javni GitHub Pages link
-        function initLockedPublicPortal(config) {
+        async function initLockedPublicPortal(config) {
             // Sakrij testne primjere i gumb za objavu dok se admin ne prijavi šifrom
             document.getElementById('headerGithubBtn').classList.add('hidden');
             document.getElementById('demoHintsBox').classList.add('hidden');
@@ -1901,6 +1962,9 @@
             document.getElementById('idSize').value = config.settings.idSize;
             document.getElementById('idColor').value = config.settings.idColor;
             document.getElementById('idLabelText').value = config.settings.idLabelText;
+
+            // Ako se u istom GitHub direktoriju nalazi 'certificate.pdf', automatski ga preuzmi i koristi
+            await tryLoadRepoCertificatePdf();
         }
 
         // Pomoćne funkcije za preuzimanje datoteka u pregledniku
